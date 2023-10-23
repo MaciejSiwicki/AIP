@@ -1,79 +1,91 @@
+import gymnasium as gym
 import numpy as np
-import gym
-import random
+import matplotlib.pyplot as plt
 
+def run(is_training=True, render=False):
 
-def main():
-    env = gym.make("Taxi-v3")
+    env = gym.make('CartPole-v1', render_mode='human'  if render else None)
 
-    # initialize q-table
-    state_size = env.observation_space.n  # type: ignore
-    action_size = env.action_space.n  # type: ignore
-    qtable = np.zeros((state_size, action_size))
+############# DATA ################
+    learning_rate = 0.1 #alpha
+    discount_factor = 0.99 #gamma
+    epsilon = 1
+    epsilon_decay_rate = 0.00001
+    rng = np.random.default_rng()
 
-    learning_rate = 0.9
-    discount_rate = 0.8
-    epsilon = 1.0
-    decay_rate = 0.005
+    pos_bin = np.linspace(-2.4, 2.4, 20)
+    vel_bin = np.linspace(-4, 4, 20)
+    ang_bin = np.linspace(-.2095, .2095, 20)
+    ang_vel_bin = np.linspace(-10, 10, 20)
+###################################
 
-    # training variables
-    num_episodes = 1000
-    max_steps = 99
+    if(is_training):
+        q = np.zeros((len(pos_bin)+1, len(vel_bin)+1, len(ang_bin)+1, len(ang_vel_bin)+1, env.action_space.n))
 
-    # training
-    for episode in range(num_episodes):
-        # reset the environment
+    rewards_per_episode = []
+    i = 0
+
+    while(True):
+
         state = env.reset()[0]
-        # print(state)
-        done = False
+        state_p = np.digitize(state[0], pos_bin)
+        state_v = np.digitize(state[1], vel_bin)
+        state_a = np.digitize(state[2], ang_bin)
+        state_av = np.digitize(state[3], ang_vel_bin)
 
-        for s in range(max_steps):
-            if random.uniform(0, 1) < epsilon:
+        terminated = False
+        rewards=0
+
+        while(not terminated and rewards < 1000):
+
+            if is_training and rng.random() < epsilon:
                 action = env.action_space.sample()
             else:
-                action = np.argmax(qtable[state, :])
+                action = np.argmax(q[state_p, state_v, state_a, state_av, :])
 
-            new_state, reward, done, info, _ = env.step(action)
+            new_state,reward,terminated, _, _ = env.step(action)
+            new_state_p = np.digitize(new_state[0], pos_bin)
+            new_state_v = np.digitize(new_state[1], vel_bin)
+            new_state_a = np.digitize(new_state[2], ang_bin)
+            new_state_av= np.digitize(new_state[3], ang_vel_bin)
 
-            # Q-learning algorithm
-            qtable[state, action] = qtable[state, action] + learning_rate * (
-                reward
-                + discount_rate * np.max(qtable[new_state, :])
-                - qtable[state, action]
-            )
+            if is_training:
+                q[state_p, state_v, state_a, state_av, action] = q[state_p, state_v, state_a, state_av, action] 
+                + learning_rate * (reward + discount_factor*np.max(q[new_state_p, new_state_v, new_state_a, new_state_av,:]) 
+                - q[state_p, state_v, state_a, state_av, action])
 
             state = new_state
+            state_p = new_state_p
+            state_v = new_state_v
+            state_a = new_state_a
+            state_av= new_state_av
 
-            if done == True:
-                break
+            rewards += reward
 
-        # Decrease epsilon
-        epsilon = np.exp(-decay_rate * episode)
+            if not is_training:
+                print(f'Episode: {i}  Rewards: {rewards}')
 
-    input("Press Enter to watch trained agent...")
+        rewards_per_episode.append(rewards)
+        mean_rewards = np.mean(rewards_per_episode[len(rewards_per_episode)-100:])
+        
+        # if is_training and i%100==0:
+        #     print(f'Episode: {i} {rewards}  | Epsilon: {epsilon:0.2f} | Mean Rewards {mean_rewards:0.1f}')
 
-    env.close()
-    env = gym.make("Taxi-v3", render_mode="human")
-    state = env.reset()[0]
-    done = False
-    rewards = 0
-
-    for s in range(max_steps):
-        print(f"TRAINED AGENT")
-        print("Step {}".format(s + 1))
-
-        action = np.argmax(qtable[state, :])
-        new_state, reward, done, info, _ = env.step(action)
-        rewards += reward
-        env.render()
-        print(f"score: {rewards}")
-        state = new_state
-
-        if done == True:
+        if mean_rewards>1000:
             break
+        
+        epsilon = max(epsilon - epsilon_decay_rate, 0)
+
+        i+=1
 
     env.close()
 
+    mean_rewards = []
+    for t in range(i):
+        mean_rewards.append(np.mean(rewards_per_episode[max(0, t-100):(t+1)]))
+    plt.plot(mean_rewards)
+    plt.savefig(f'cartpole.png')
 
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    run(is_training=True, render=False)
+    #run(is_training=False, render=True)

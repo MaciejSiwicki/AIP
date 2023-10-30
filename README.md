@@ -13,7 +13,7 @@ https://github.com/MaciejSiwicki/AIP/assets/141075199/d8659e73-843f-4094-85f7-31
 ## Start project
 
 ```
-python -m venv .venv
-source .venv/Scripts/activate
-pip install -r requirements.txt
+$ python -m venv .venv
+$ source .venv/Scripts/activate
+$ pip install -r requirements.txt
 ```

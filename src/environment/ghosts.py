@@ -4,6 +4,7 @@ from vector import Vector
 from constants import *
 from entity import Entity
 from modes import ModeController
+from sprites import GhostSprites
 
 
 class Ghost(Entity):
@@ -19,6 +20,7 @@ class Ghost(Entity):
         self.homeNode = node
 
     def update(self, dt):
+        self.sprites.update(dt)
         self.mode.update(dt)
         if self.mode.current is SCATTER:
             self.scatter()
@@ -62,6 +64,7 @@ class Blinky(Ghost):
         Ghost.__init__(self, node, pacman, blinky)
         self.name = BLINKY
         self.color = RED
+        self.sprites = GhostSprites(self)
 
 
 class Pinky(Ghost):
@@ -69,6 +72,7 @@ class Pinky(Ghost):
         Ghost.__init__(self, node, pacman, blinky)
         self.name = PINKY
         self.color = PINK
+        self.sprites = GhostSprites(self)
 
     def scatter(self):
         self.goal = Vector(TILEWIDTH * NCOLS, 0)
@@ -85,6 +89,7 @@ class Inky(Ghost):
         Ghost.__init__(self, node, pacman, blinky)
         self.name = INKY
         self.color = TEAL
+        self.sprites = GhostSprites(self)
 
     def scatter(self):
         self.goal = Vector(TILEWIDTH * NCOLS, TILEHEIGHT * NROWS)
@@ -103,6 +108,7 @@ class Clyde(Ghost):
         Ghost.__init__(self, node, pacman, blinky)
         self.name = CLYDE
         self.color = ORANGE
+        self.sprites = GhostSprites(self)
 
     def scatter(self):
         self.goal = Vector(0, TILEHEIGHT * NROWS)
@@ -154,14 +160,6 @@ class GhostGroup(object):
     def reset(self):
         for ghost in self:
             ghost.reset()
-
-    def hide(self):
-        for ghost in self:
-            ghost.visible = False
-
-    def show(self):
-        for ghost in self:
-            ghost.visible = True
 
     def render(self, screen):
         for ghost in self:

@@ -25,6 +25,7 @@ class Entity(object):
         self.disablePortal = False
         self.directionMethod = self.randomDirection
         self.setStartNode(node)
+        self.image = None
 
     def setStartNode(self, node):
         self.node = node
@@ -73,8 +74,13 @@ class Entity(object):
 
     def render(self, screen):
         if self.visible:
-            p = self.position.asInt()
-            pygame.draw.circle(screen, self.color, p, self.radius)
+            if self.image is not None:
+                adjust = Vector(TILEWIDTH, TILEHEIGHT) / 2
+                p = self.position - adjust
+                screen.blit(self.image, p.asTuple())
+            else:
+                p = self.position.asInt()
+                pygame.draw.circle(screen, self.color, p, self.radius)
 
     def update(self, dt):
         self.position += self.directions[self.direction] * self.speed * dt

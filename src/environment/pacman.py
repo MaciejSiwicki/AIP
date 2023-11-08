@@ -3,6 +3,7 @@ from pygame.locals import K_UP, K_DOWN, K_LEFT, K_RIGHT
 from vector import Vector
 from constants import *
 from entity import Entity
+from sprites import PacmanSprites
 
 
 class Pacman(Entity):
@@ -13,6 +14,7 @@ class Pacman(Entity):
         self.direction = LEFT
         self.setBetweenNodes(LEFT)
         self.alive = True
+        self.sprites = PacmanSprites(self)
 
     def reset(self):
         Entity.reset(self)
@@ -25,6 +27,7 @@ class Pacman(Entity):
         self.direction = STOP
 
     def update(self, dt):
+        self.sprites.update(dt)
         self.position += self.directions[self.direction] * self.speed * dt
         direction = self.getValidKey()
         if self.overshotTarget():

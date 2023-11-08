@@ -15,7 +15,7 @@ class Text(object):
         self.lifespan = time
         self.label = None
         self.destroy = False
-        self.setupFont("PressStart2P-Regular.ttf")
+        self.setupFont("utils/PressStart2P-Regular.ttf")
         self.createLabel()
 
     def setupFont(self, fontpath):

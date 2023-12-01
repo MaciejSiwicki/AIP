@@ -10,7 +10,5 @@ if __name__ == "__main__":
 
     while not done:
         action = None
-        # if env.pygame.pacman.overshotTarget():
-        #     action = np.random.randint(-2, 3)
         observation, reward, done, info = env.step(action)
-        env.render(mode="human")
+        env.render(mode="random_smart")

@@ -57,20 +57,37 @@ class GameController(object):
 
     def observe(self):
         # print(
-        #     self.pacman.position,
-        #     self.ghosts.blinky.position,
-        #     self.ghosts.pinky.position,
-        #     self.ghosts.inky.position,
-        #     self.ghosts.clyde.position,
-        #     self.pellets.numEaten,
-        # )
+        # self.pacman.position,
+        # self.ghosts.blinky.position,
+        # self.ghosts.blinky.direction,
+        # self.ghosts.blinky.mode.current,
+        # self.ghosts.pinky.position,
+        # self.ghosts.pinky.direction,
+        # self.ghosts.pinky.mode.current,
+        # self.ghosts.inky.position,
+        # self.ghosts.inky.direction,
+        # self.ghosts.inky.mode.current,
+        # self.ghosts.clyde.position,
+        # self.ghosts.clyde.direction,
+        # self.ghosts.clyde.mode.current,
+        # self.pellets.numEaten,
+        # self.pellets.powerpellets
         return (
             self.pacman.position,
             self.ghosts.blinky.position,
+            self.ghosts.blinky.direction,
+            self.ghosts.blinky.mode.current,
             self.ghosts.pinky.position,
+            self.ghosts.pinky.direction,
+            self.ghosts.pinky.mode.current,
             self.ghosts.inky.position,
+            self.ghosts.inky.direction,
+            self.ghosts.inky.mode.current,
             self.ghosts.clyde.position,
+            self.ghosts.clyde.direction,
+            self.ghosts.clyde.mode.current,
             self.pellets.numEaten,
+            # self.pellets.powerpellets
         )
 
     def restartGame(self):

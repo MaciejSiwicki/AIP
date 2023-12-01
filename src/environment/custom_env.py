@@ -19,6 +19,7 @@ class CustomEnv(gym.Env):
         self.action_space = spaces.Discrete(5, start=-2)
         print(self.action_space)
 
+        # observation space has to be modified!
         self.observation_space = spaces.Tuple(
             tuple(
                 spaces.Tuple(
@@ -44,8 +45,8 @@ class CustomEnv(gym.Env):
         done = self.pygame.is_done()
         return obs, reward, done, {}
 
-    def render(self, mode="human"):
-        self.pygame.update()
+    def render(self, mode):
+        self.pygame.update(mode)
 
     def close(self):
         pass

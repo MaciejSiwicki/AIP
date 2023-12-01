@@ -132,10 +132,10 @@ class GameController(object):
         self.nodes.denyAccessList(15, 26, UP, self.ghosts)
         return self
 
-    def update(self):
+    def update(self, mode="human"):
         dt = self.clock.tick(30) / 1000.0
         self.textgroup.update(dt)
-        self.pacman.update(dt)
+        self.pacman.update(dt, mode)
         self.ghosts.update(dt)
         self.pellets.update(dt)
         self.checkPelletEvents()

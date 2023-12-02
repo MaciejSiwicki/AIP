@@ -1,3 +1,5 @@
 pygame
 numpy
 gym
+stable_baselines3
+shimmy

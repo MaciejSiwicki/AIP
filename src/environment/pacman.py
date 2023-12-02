@@ -27,10 +27,10 @@ class Pacman(Entity):
         self.alive = False
         self.direction = STOP
 
-    def update(self, dt, mode="human"):
+    def update(self, dt, mode="human", action=None):
         self.sprites.update(dt)
         self.position += self.directions[self.direction] * self.speed * dt
-        direction = self.getValidKey(mode)
+        direction = self.getValidKey(mode, action)
         if self.overshotTarget():
             self.node = self.target
             if self.node.neighbors[PORTAL] is not None:
@@ -48,7 +48,7 @@ class Pacman(Entity):
             if self.oppositeDirection(direction):
                 self.reverseDirection()
 
-    def getValidKey(self, mode="human"):
+    def getValidKey(self, mode="human", action=None):
         if mode == "random":
             return random.choice([UP, DOWN, LEFT, RIGHT, STOP])
         if mode == "random_smart":
@@ -56,6 +56,9 @@ class Pacman(Entity):
                 return random.choice([UP, DOWN, LEFT, RIGHT, STOP])
             else:
                 return self.direction
+        if action is not None:
+            observation_mapping = {0: -2, 1: -1, 2: 0, 3: 1, 4: 2}
+            return observation_mapping[action]
         key_pressed = pygame.key.get_pressed()
         if key_pressed[K_UP]:
             return UP

@@ -14,9 +14,8 @@ class CustomEnv(gym.Env):
         num_ghosts = 4
         eatenPellets = 244
         self.pygame = gamecontroller.startGame()
-
         # 4 possible movements - -2 right, 2 left, 1 up, -1 down 0 stop
-        self.action_space = spaces.Discrete(5, start=-2)
+        self.action_space = spaces.Discrete(5)
 
         flat_dimensions = [SCREENWIDTH, SCREENHEIGHT, 5] * (num_ghosts + 1) + [
             max(eatenPellets, 1)
@@ -25,25 +24,21 @@ class CustomEnv(gym.Env):
 
         self.observation_space = multi_discrete_space
 
-        print(self.observation_space)
-
     def reset(self):
-        del self.pygame
-        gamecontroller = GameController()
-        self.pygame = gamecontroller.startGame()
+        if self.pygame.lives <= 0 or self.pygame.pellets.isEmpty():
+            self.pygame.restartGame()
         obs = self.pygame.observe()
         return obs
 
     def step(self, action):
-        self.pygame.action(action)
         obs = self.pygame.observe()
         reward = self.pygame.evaluate()
         done = self.pygame.is_done()
-        self.pygame.update("human")
+        self.pygame.update("human", action)
         return obs, reward, done, {}
 
-    def render(self, mode):
-        self.pygame.update(mode)
+    # def render(self, mode):
+    #     self.pygame.update(mode)
 
     def close(self):
         pass

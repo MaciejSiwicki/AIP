@@ -9,10 +9,14 @@ if __name__ == "__main__":
     env = CustomEnv()
     observation = env.reset()
     model = A2C("MlpPolicy", env, device="cpu")
-    model.learn(total_timesteps=500)
-    done = False
+    model.learn(total_timesteps=10000000)
 
+    model.save("pacman-a2c")
+    del model
+    model = A2C.load("pacman-a2c")
+    done = False
     while not done:
-        action = None
-        observation, reward, done, info = env.step(action)
-        env.render(mode="human")
+        action, _states = model.predict(observation)
+        observation, reward, done, info = env.step(int(action))
+    #     print(observation, reward, done, info)
+    #     env.render("human")

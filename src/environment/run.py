@@ -23,31 +23,30 @@ class GameController(object):
     def action(self, action):
         if self.pacman.alive:
             if action == RIGHT:  # Assuming -2 means move right
-                self.pacman.direction = RIGHT
+                return RIGHT
             elif action == LEFT:  # Assuming 2 means move left
-                self.pacman.direction = LEFT
+                return LEFT
             elif action == UP:  # Assuming 1 means move up
-                self.pacman.direction = UP
+                return UP
             elif action == DOWN:  # Assuming -1 means move down
-                self.pacman.direction = DOWN
+                return DOWN
             elif action == STOP:  # Assuming 0 means stop
-                self.pacman.direction = STOP
+                return STOP
 
     def evaluate(self):
         reward = 0
         if self.lives == 0:
-            reward = (
-                -self.pellets.getPelletSize()
-                - self.pellets.numEaten
-                + self.pellet.numEaten
-            )
+            reward += -5
             return reward
-        elif self.pellets.isEmpty():
-            reward = 100 + self.pellets.numEaten
-        elif self.pacman.alive:
-            reward = self.pellets.numEaten
+        if self.pacman.alive:
+            reward += self.pellets.numEaten
+        if self.pellets.isEmpty():
+            reward += self.pellets.numEaten
 
-        # print(reward)
+        # if self.pacman.eatPellets(self.pellets.pelletList).name == POWERPELLET:
+        #     reward += 50
+
+        print(reward)
         return reward
 
     def is_done(self):
@@ -57,52 +56,53 @@ class GameController(object):
             return False
 
     def observe(self):
-        print(
-            [self.pacman.position.x, self.pacman.position.y, self.pacman.direction],
-            [
-                self.ghosts.blinky.position.x,
-                self.ghosts.blinky.position.y,
-                self.ghosts.blinky.direction,
-            ],
-            # self.ghosts.blinky.mode.current,
-            [
-                self.ghosts.pinky.position.x,
-                self.ghosts.pinky.position.y,
-                self.ghosts.pinky.direction,
-            ],
-            # self.ghosts.pinky.mode.current,
-            [
-                self.ghosts.inky.position.x,
-                self.ghosts.inky.position.y,
-                self.ghosts.inky.direction,
-            ],
-            # self.ghosts.inky.mode.current,
-            [
-                self.ghosts.clyde.position.x,
-                self.ghosts.clyde.position.y,
-                self.ghosts.clyde.direction,
-            ],
-            # self.ghosts.clyde.mode.current,
-            self.pellets.numEaten,
-            # self.pellets.powerpellets
-        )
+        # print(
+        #     [self.pacman.position.x, self.pacman.position.y, self.pacman.direction],
+        #     [
+        #         self.ghosts.blinky.position.x,
+        #         self.ghosts.blinky.position.y,
+        #         self.ghosts.blinky.direction,
+        #     ],
+        #     # self.ghosts.blinky.mode.current,
+        #     [
+        #         self.ghosts.pinky.position.x,
+        #         self.ghosts.pinky.position.y,
+        #         self.ghosts.pinky.direction,
+        #     ],
+        #     # self.ghosts.pinky.mode.current,
+        #     [
+        #         self.ghosts.inky.position.x,
+        #         self.ghosts.inky.position.y,
+        #         self.ghosts.inky.direction,
+        #     ],
+        #     # self.ghosts.inky.mode.current,
+        #     [
+        #         self.ghosts.clyde.position.x,
+        #         self.ghosts.clyde.position.y,
+        #         self.ghosts.clyde.direction,
+        #     ],
+        #     # self.ghosts.clyde.mode.current,
+        #     self.pellets.numEaten,
+        #     # self.pellets.powerpellets
+        # )
+        observation_mapping = {-2: 0, -1: 1, 0: 2, 1: 3, 2: 4}
         return np.array(
             [
                 self.pacman.position.x,
                 self.pacman.position.y,
-                self.pacman.direction,
+                observation_mapping[self.pacman.direction],
                 self.ghosts.blinky.position.x,
                 self.ghosts.blinky.position.y,
-                self.ghosts.blinky.direction,
+                observation_mapping[self.ghosts.blinky.direction],
                 self.ghosts.pinky.position.x,
                 self.ghosts.pinky.position.y,
-                self.ghosts.pinky.direction,
+                observation_mapping[self.ghosts.pinky.direction],
                 self.ghosts.inky.position.x,
                 self.ghosts.inky.position.y,
-                self.ghosts.inky.direction,
+                observation_mapping[self.ghosts.inky.direction],
                 self.ghosts.clyde.position.x,
                 self.ghosts.clyde.position.y,
-                self.ghosts.clyde.direction,
+                observation_mapping[self.ghosts.clyde.direction],
                 self.pellets.numEaten,
             ]
         ).flatten()
@@ -151,10 +151,10 @@ class GameController(object):
         self.nodes.denyAccessList(15, 26, UP, self.ghosts)
         return self
 
-    def update(self, mode="human"):
+    def update(self, mode="human", action=None):
         dt = self.clock.tick(30) / 1000.0
         self.textgroup.update(dt)
-        self.pacman.update(dt, mode)
+        self.pacman.update(dt, mode, action)
         self.ghosts.update(dt)
         self.pellets.update(dt)
         self.checkPelletEvents()
@@ -186,8 +186,8 @@ class GameController(object):
                     if self.pacman.alive:
                         self.lives -= 1
                         self.pacman.die()
-                        if self.lives <= 0:
-                            self.restartGame()
+                        # if self.lives <= 0:
+                        #     self.restartGame()
 
     def checkEvents(self):
         for event in pygame.event.get():

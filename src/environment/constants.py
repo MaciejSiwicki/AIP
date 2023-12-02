@@ -16,9 +16,9 @@ RED = (255, 0, 0)
 
 STOP = 0
 UP = 1
-DOWN = 2
-LEFT = 3
-RIGHT = 4
+DOWN = -1
+LEFT = 2
+RIGHT = -2
 
 PACMAN = 0
 PELLET = 1

@@ -17,18 +17,14 @@ class CustomEnv(gym.Env):
 
         # 4 possible movements - -2 right, 2 left, 1 up, -1 down 0 stop
         self.action_space = spaces.Discrete(5, start=-2)
-        print(self.action_space)
 
-        # observation space has to be modified!
-        self.observation_space = spaces.Tuple(
-            tuple(
-                spaces.Tuple(
-                    [spaces.Discrete(SCREENWIDTH), spaces.Discrete(SCREENHEIGHT)]
-                )
-                for _ in range(num_ghosts + 1)
-            )
-            + (spaces.Discrete(max(eatenPellets, 1)),)
-        )
+        flat_dimensions = [SCREENWIDTH, SCREENHEIGHT, 5] * (num_ghosts + 1) + [
+            max(eatenPellets, 1)
+        ]
+        multi_discrete_space = spaces.MultiDiscrete(flat_dimensions)
+
+        self.observation_space = multi_discrete_space
+
         print(self.observation_space)
 
     def reset(self):
@@ -43,6 +39,7 @@ class CustomEnv(gym.Env):
         obs = self.pygame.observe()
         reward = self.pygame.evaluate()
         done = self.pygame.is_done()
+        self.pygame.update("human")
         return obs, reward, done, {}
 
     def render(self, mode):

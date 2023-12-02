@@ -7,6 +7,7 @@ from pellets import PelletGroup
 from ghosts import GhostGroup
 from text import TextGroup
 from sprites import MazeSprites
+import numpy as np
 
 
 class GameController(object):
@@ -21,15 +22,15 @@ class GameController(object):
 
     def action(self, action):
         if self.pacman.alive:
-            if action == -2:  # Assuming -2 means move right
+            if action == RIGHT:  # Assuming -2 means move right
                 self.pacman.direction = RIGHT
-            elif action == 2:  # Assuming 2 means move left
+            elif action == LEFT:  # Assuming 2 means move left
                 self.pacman.direction = LEFT
-            elif action == 1:  # Assuming 1 means move up
+            elif action == UP:  # Assuming 1 means move up
                 self.pacman.direction = UP
-            elif action == -1:  # Assuming -1 means move down
+            elif action == DOWN:  # Assuming -1 means move down
                 self.pacman.direction = DOWN
-            elif action == 0:  # Assuming 0 means stop
+            elif action == STOP:  # Assuming 0 means stop
                 self.pacman.direction = STOP
 
     def evaluate(self):
@@ -56,40 +57,58 @@ class GameController(object):
             return False
 
     def observe(self):
-        # print(
-        # self.pacman.position,
-        # self.ghosts.blinky.position,
-        # self.ghosts.blinky.direction,
-        # self.ghosts.blinky.mode.current,
-        # self.ghosts.pinky.position,
-        # self.ghosts.pinky.direction,
-        # self.ghosts.pinky.mode.current,
-        # self.ghosts.inky.position,
-        # self.ghosts.inky.direction,
-        # self.ghosts.inky.mode.current,
-        # self.ghosts.clyde.position,
-        # self.ghosts.clyde.direction,
-        # self.ghosts.clyde.mode.current,
-        # self.pellets.numEaten,
-        # self.pellets.powerpellets
-        return (
-            self.pacman.position,
-            self.ghosts.blinky.position,
-            self.ghosts.blinky.direction,
-            self.ghosts.blinky.mode.current,
-            self.ghosts.pinky.position,
-            self.ghosts.pinky.direction,
-            self.ghosts.pinky.mode.current,
-            self.ghosts.inky.position,
-            self.ghosts.inky.direction,
-            self.ghosts.inky.mode.current,
-            self.ghosts.clyde.position,
-            self.ghosts.clyde.direction,
-            self.ghosts.clyde.mode.current,
+        print(
+            [self.pacman.position.x, self.pacman.position.y, self.pacman.direction],
+            [
+                self.ghosts.blinky.position.x,
+                self.ghosts.blinky.position.y,
+                self.ghosts.blinky.direction,
+            ],
+            # self.ghosts.blinky.mode.current,
+            [
+                self.ghosts.pinky.position.x,
+                self.ghosts.pinky.position.y,
+                self.ghosts.pinky.direction,
+            ],
+            # self.ghosts.pinky.mode.current,
+            [
+                self.ghosts.inky.position.x,
+                self.ghosts.inky.position.y,
+                self.ghosts.inky.direction,
+            ],
+            # self.ghosts.inky.mode.current,
+            [
+                self.ghosts.clyde.position.x,
+                self.ghosts.clyde.position.y,
+                self.ghosts.clyde.direction,
+            ],
+            # self.ghosts.clyde.mode.current,
             self.pellets.numEaten,
             # self.pellets.powerpellets
         )
+        return np.array(
+            [
+                self.pacman.position.x,
+                self.pacman.position.y,
+                self.pacman.direction,
+                self.ghosts.blinky.position.x,
+                self.ghosts.blinky.position.y,
+                self.ghosts.blinky.direction,
+                self.ghosts.pinky.position.x,
+                self.ghosts.pinky.position.y,
+                self.ghosts.pinky.direction,
+                self.ghosts.inky.position.x,
+                self.ghosts.inky.position.y,
+                self.ghosts.inky.direction,
+                self.ghosts.clyde.position.x,
+                self.ghosts.clyde.position.y,
+                self.ghosts.clyde.direction,
+                self.pellets.numEaten,
+            ]
+        ).flatten()
 
+    # self.ghosts.XXX.mode.current,
+    # self.pellets.powerpellets
     def restartGame(self):
         self.lives = 1
         self.startGame()

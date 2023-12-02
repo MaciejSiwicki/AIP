@@ -4,6 +4,7 @@ from vector import Vector
 from constants import *
 from entity import Entity
 from sprites import PacmanSprites
+import random
 
 
 class Pacman(Entity):
@@ -26,10 +27,10 @@ class Pacman(Entity):
         self.alive = False
         self.direction = STOP
 
-    def update(self, dt):
+    def update(self, dt, mode="human"):
         self.sprites.update(dt)
         self.position += self.directions[self.direction] * self.speed * dt
-        direction = self.getValidKey()
+        direction = self.getValidKey(mode)
         if self.overshotTarget():
             self.node = self.target
             if self.node.neighbors[PORTAL] is not None:
@@ -47,7 +48,14 @@ class Pacman(Entity):
             if self.oppositeDirection(direction):
                 self.reverseDirection()
 
-    def getValidKey(self):
+    def getValidKey(self, mode="human"):
+        if mode == "random":
+            return random.choice([UP, DOWN, LEFT, RIGHT, STOP])
+        if mode == "random_smart":
+            if self.overshotTarget():
+                return random.choice([UP, DOWN, LEFT, RIGHT, STOP])
+            else:
+                return self.direction
         key_pressed = pygame.key.get_pressed()
         if key_pressed[K_UP]:
             return UP

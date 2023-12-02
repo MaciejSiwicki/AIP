@@ -19,6 +19,77 @@ class GameController(object):
         self.score = 0
         self.textgroup = TextGroup()
 
+    def action(self, action):
+        if self.pacman.alive:
+            if action == -2:  # Assuming -2 means move right
+                self.pacman.direction = RIGHT
+            elif action == 2:  # Assuming 2 means move left
+                self.pacman.direction = LEFT
+            elif action == 1:  # Assuming 1 means move up
+                self.pacman.direction = UP
+            elif action == -1:  # Assuming -1 means move down
+                self.pacman.direction = DOWN
+            elif action == 0:  # Assuming 0 means stop
+                self.pacman.direction = STOP
+
+    def evaluate(self):
+        reward = 0
+        if self.lives == 0:
+            reward = (
+                -self.pellets.getPelletSize()
+                - self.pellets.numEaten
+                + self.pellet.numEaten
+            )
+            return reward
+        elif self.pellets.isEmpty():
+            reward = 100 + self.pellets.numEaten
+        elif self.pacman.alive:
+            reward = self.pellets.numEaten
+
+        # print(reward)
+        return reward
+
+    def is_done(self):
+        if self.lives == 0 or (self.pellets.isEmpty() and self.pacman.alive):
+            return True
+        else:
+            return False
+
+    def observe(self):
+        # print(
+        # self.pacman.position,
+        # self.ghosts.blinky.position,
+        # self.ghosts.blinky.direction,
+        # self.ghosts.blinky.mode.current,
+        # self.ghosts.pinky.position,
+        # self.ghosts.pinky.direction,
+        # self.ghosts.pinky.mode.current,
+        # self.ghosts.inky.position,
+        # self.ghosts.inky.direction,
+        # self.ghosts.inky.mode.current,
+        # self.ghosts.clyde.position,
+        # self.ghosts.clyde.direction,
+        # self.ghosts.clyde.mode.current,
+        # self.pellets.numEaten,
+        # self.pellets.powerpellets
+        return (
+            self.pacman.position,
+            self.ghosts.blinky.position,
+            self.ghosts.blinky.direction,
+            self.ghosts.blinky.mode.current,
+            self.ghosts.pinky.position,
+            self.ghosts.pinky.direction,
+            self.ghosts.pinky.mode.current,
+            self.ghosts.inky.position,
+            self.ghosts.inky.direction,
+            self.ghosts.inky.mode.current,
+            self.ghosts.clyde.position,
+            self.ghosts.clyde.direction,
+            self.ghosts.clyde.mode.current,
+            self.pellets.numEaten,
+            # self.pellets.powerpellets
+        )
+
     def restartGame(self):
         self.lives = 1
         self.startGame()
@@ -31,7 +102,10 @@ class GameController(object):
 
     def startGame(self):
         self.setBackground()
-        self.mazesprites = MazeSprites("utils/maze1.txt", "utils/maze1_rotation.txt")
+        self.mazesprites = MazeSprites(
+            "utils/maze1.txt",
+            "utils/maze1_rotation.txt",
+        )
         self.background = self.mazesprites.constructBackground(self.background, 0)
         self.nodes = NodeGroup("utils/maze1.txt")
         self.nodes.setPortalPair((0, 17), (27, 17))
@@ -56,11 +130,12 @@ class GameController(object):
         self.nodes.denyAccessList(15, 14, UP, self.ghosts)
         self.nodes.denyAccessList(12, 26, UP, self.ghosts)
         self.nodes.denyAccessList(15, 26, UP, self.ghosts)
+        return self
 
-    def update(self):
+    def update(self, mode="human"):
         dt = self.clock.tick(30) / 1000.0
         self.textgroup.update(dt)
-        self.pacman.update(dt)
+        self.pacman.update(dt, mode)
         self.ghosts.update(dt)
         self.pellets.update(dt)
         self.checkPelletEvents()
@@ -112,6 +187,7 @@ class GameController(object):
         pellet = self.pacman.eatPellets(self.pellets.pelletList)
         if pellet:
             self.pellets.numEaten += 1
+            # print(self.pellets.numEaten)
             self.updateScore(pellet.points)
             if self.pellets.numEaten == 30:
                 self.ghosts.inky.startNode.allowAccess(RIGHT, self.ghosts.inky)

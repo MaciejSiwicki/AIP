@@ -8,8 +8,8 @@ from sprites import GhostSprites
 
 
 class Ghost(Entity):
-    def __init__(self, node, pacman=None, blinky=None):
-        Entity.__init__(self, node)
+    def __init__(self, node, pacman=None, blinky=None, display=True):
+        Entity.__init__(self, node, display=display)
         self.name = GHOST
         self.points = 200
         self.goal = Vector()
@@ -18,9 +18,11 @@ class Ghost(Entity):
         self.mode = ModeController(self)
         self.blinky = blinky
         self.homeNode = node
+        self.display = display
 
     def update(self, dt):
-        self.sprites.update(dt)
+        if self.display:
+            self.sprites.update(dt)
         self.mode.update(dt)
         if self.mode.current is SCATTER:
             self.scatter()
@@ -60,19 +62,21 @@ class Ghost(Entity):
 
 
 class Blinky(Ghost):
-    def __init__(self, node, pacman=None, blinky=None):
-        Ghost.__init__(self, node, pacman, blinky)
+    def __init__(self, node, pacman=None, blinky=None, display=True):
+        Ghost.__init__(self, node, pacman, blinky, display)
         self.name = BLINKY
         self.color = RED
-        self.sprites = GhostSprites(self)
+        if display:
+            self.sprites = GhostSprites(self)
 
 
 class Pinky(Ghost):
-    def __init__(self, node, pacman=None, blinky=None):
-        Ghost.__init__(self, node, pacman, blinky)
+    def __init__(self, node, pacman=None, blinky=None, display=True):
+        Ghost.__init__(self, node, pacman, blinky, display)
         self.name = PINKY
         self.color = PINK
-        self.sprites = GhostSprites(self)
+        if display:
+            self.sprites = GhostSprites(self)
 
     def scatter(self):
         self.goal = Vector(TILEWIDTH * NCOLS, 0)
@@ -85,11 +89,12 @@ class Pinky(Ghost):
 
 
 class Inky(Ghost):
-    def __init__(self, node, pacman=None, blinky=None):
-        Ghost.__init__(self, node, pacman, blinky)
+    def __init__(self, node, pacman=None, blinky=None, display=True):
+        Ghost.__init__(self, node, pacman, blinky, display)
         self.name = INKY
         self.color = TEAL
-        self.sprites = GhostSprites(self)
+        if display:
+            self.sprites = GhostSprites(self)
 
     def scatter(self):
         self.goal = Vector(TILEWIDTH * NCOLS, TILEHEIGHT * NROWS)
@@ -104,11 +109,12 @@ class Inky(Ghost):
 
 
 class Clyde(Ghost):
-    def __init__(self, node, pacman=None, blinky=None):
-        Ghost.__init__(self, node, pacman, blinky)
+    def __init__(self, node, pacman=None, blinky=None, display=True):
+        Ghost.__init__(self, node, pacman, blinky, display)
         self.name = CLYDE
         self.color = ORANGE
-        self.sprites = GhostSprites(self)
+        if display:
+            self.sprites = GhostSprites(self)
 
     def scatter(self):
         self.goal = Vector(0, TILEHEIGHT * NROWS)
@@ -126,11 +132,11 @@ class Clyde(Ghost):
 
 
 class GhostGroup(object):
-    def __init__(self, node, pacman):
-        self.blinky = Blinky(node, pacman)
-        self.pinky = Pinky(node, pacman)
-        self.inky = Inky(node, pacman, self.blinky)
-        self.clyde = Clyde(node, pacman)
+    def __init__(self, node, pacman, display=True):
+        self.blinky = Blinky(node, pacman, display=display)
+        self.pinky = Pinky(node, pacman, display=display)
+        self.inky = Inky(node, pacman, self.blinky, display=display)
+        self.clyde = Clyde(node, pacman, display=display)
         self.ghosts = [self.blinky, self.pinky, self.inky, self.clyde]
 
     def __iter__(self):

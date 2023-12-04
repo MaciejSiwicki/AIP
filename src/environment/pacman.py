@@ -8,14 +8,16 @@ import random
 
 
 class Pacman(Entity):
-    def __init__(self, node):
+    def __init__(self, node, display=True):
         Entity.__init__(self, node)
+        self.display = display
         self.name = PACMAN
         self.color = YELLOW
         self.direction = LEFT
         self.setBetweenNodes(LEFT)
         self.alive = True
-        self.sprites = PacmanSprites(self)
+        if self.display:
+            self.sprites = PacmanSprites(self)
 
     def reset(self):
         Entity.reset(self)
@@ -28,7 +30,8 @@ class Pacman(Entity):
         self.direction = STOP
 
     def update(self, dt, mode="human", action=None):
-        self.sprites.update(dt)
+        if self.display:
+            self.sprites.update(dt)
         self.position += self.directions[self.direction] * self.speed * dt
         direction = self.getValidKey(mode, action)
         if self.overshotTarget():
@@ -59,16 +62,17 @@ class Pacman(Entity):
         if action is not None:
             observation_mapping = {0: -2, 1: -1, 2: 0, 3: 1, 4: 2}
             return observation_mapping[action]
-        key_pressed = pygame.key.get_pressed()
-        if key_pressed[K_UP]:
-            return UP
-        if key_pressed[K_DOWN]:
-            return DOWN
-        if key_pressed[K_LEFT]:
-            return LEFT
-        if key_pressed[K_RIGHT]:
-            return RIGHT
-        return STOP
+        if self.display:
+            key_pressed = pygame.key.get_pressed()
+            if key_pressed[K_UP]:
+                return UP
+            if key_pressed[K_DOWN]:
+                return DOWN
+            if key_pressed[K_LEFT]:
+                return LEFT
+            if key_pressed[K_RIGHT]:
+                return RIGHT
+            return STOP
 
     def eatPellets(self, pelletList):
         for pellet in pelletList:

@@ -11,9 +11,11 @@ import numpy as np
 
 
 class GameController(object):
-    def __init__(self):
+    def __init__(self, display=True):
+        self.display = display
         pygame.init()
-        self.screen = pygame.display.set_mode(SCREENSIZE, 0, 32)
+        if self.display:
+            self.screen = pygame.display.set_mode(SCREENSIZE, 0, 32)
         self.background = None
         self.clock = pygame.time.Clock()
         self.lives = 1
@@ -46,7 +48,7 @@ class GameController(object):
         # if self.pacman.eatPellets(self.pellets.pelletList).name == POWERPELLET:
         #     reward += 50
 
-        print(reward)
+        # print(reward)
         return reward
 
     def is_done(self):
@@ -56,35 +58,6 @@ class GameController(object):
             return False
 
     def observe(self):
-        # print(
-        #     [self.pacman.position.x, self.pacman.position.y, self.pacman.direction],
-        #     [
-        #         self.ghosts.blinky.position.x,
-        #         self.ghosts.blinky.position.y,
-        #         self.ghosts.blinky.direction,
-        #     ],
-        #     # self.ghosts.blinky.mode.current,
-        #     [
-        #         self.ghosts.pinky.position.x,
-        #         self.ghosts.pinky.position.y,
-        #         self.ghosts.pinky.direction,
-        #     ],
-        #     # self.ghosts.pinky.mode.current,
-        #     [
-        #         self.ghosts.inky.position.x,
-        #         self.ghosts.inky.position.y,
-        #         self.ghosts.inky.direction,
-        #     ],
-        #     # self.ghosts.inky.mode.current,
-        #     [
-        #         self.ghosts.clyde.position.x,
-        #         self.ghosts.clyde.position.y,
-        #         self.ghosts.clyde.direction,
-        #     ],
-        #     # self.ghosts.clyde.mode.current,
-        #     self.pellets.numEaten,
-        #     # self.pellets.powerpellets
-        # )
         observation_mapping = {-2: 0, -1: 1, 0: 2, 1: 3, 2: 4}
         return np.array(
             [
@@ -109,6 +82,7 @@ class GameController(object):
 
     # self.ghosts.XXX.mode.current,
     # self.pellets.powerpellets
+
     def restartGame(self):
         self.lives = 1
         self.startGame()
@@ -120,20 +94,24 @@ class GameController(object):
         self.background.fill(BLACK)
 
     def startGame(self):
-        self.setBackground()
-        self.mazesprites = MazeSprites(
-            "utils/maze1.txt",
-            "utils/maze1_rotation.txt",
-        )
-        self.background = self.mazesprites.constructBackground(self.background, 0)
+        if self.display:
+            self.setBackground()
+            self.mazesprites = MazeSprites(
+                "utils/maze1.txt",
+                "utils/maze1_rotation.txt",
+            )
+            self.background = self.mazesprites.constructBackground(self.background, 0)
         self.nodes = NodeGroup("utils/maze1.txt")
         self.nodes.setPortalPair((0, 17), (27, 17))
         homekey = self.nodes.createHomeNodes(11.5, 14)
         self.nodes.connectHomeNodes(homekey, (12, 14), LEFT)
         self.nodes.connectHomeNodes(homekey, (15, 14), RIGHT)
-        self.pacman = Pacman(self.nodes.getNodeFromTiles(15, 26))
+
+        self.pacman = Pacman(self.nodes.getNodeFromTiles(15, 26), self.display)
         self.pellets = PelletGroup("utils/maze1.txt")
-        self.ghosts = GhostGroup(self.nodes.getStartTempNode(), self.pacman)
+        self.ghosts = GhostGroup(
+            self.nodes.getStartTempNode(), self.pacman, self.display
+        )
         self.ghosts.blinky.setStartNode(self.nodes.getNodeFromTiles(2 + 11.5, 0 + 14))
         self.ghosts.pinky.setStartNode(self.nodes.getNodeFromTiles(2 + 11.5, 3 + 14))
         self.ghosts.inky.setStartNode(self.nodes.getNodeFromTiles(0 + 11.5, 3 + 14))
@@ -160,7 +138,8 @@ class GameController(object):
         self.checkPelletEvents()
         self.checkGhostEvents()
         self.checkEvents()
-        self.render()
+        if self.display:
+            self.render()
 
     def updateScore(self, points):
         self.score += points
@@ -186,8 +165,8 @@ class GameController(object):
                     if self.pacman.alive:
                         self.lives -= 1
                         self.pacman.die()
-                        # if self.lives <= 0:
-                        #     self.restartGame()
+                        if self.lives <= 0:
+                            self.restartGame()
 
     def checkEvents(self):
         for event in pygame.event.get():
@@ -206,7 +185,6 @@ class GameController(object):
         pellet = self.pacman.eatPellets(self.pellets.pelletList)
         if pellet:
             self.pellets.numEaten += 1
-            # print(self.pellets.numEaten)
             self.updateScore(pellet.points)
             if self.pellets.numEaten == 30:
                 self.ghosts.inky.startNode.allowAccess(RIGHT, self.ghosts.inky)

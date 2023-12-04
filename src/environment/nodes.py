@@ -5,7 +5,8 @@ import numpy as np
 
 
 class Node(object):
-    def __init__(self, x, y):
+    def __init__(self, x, y, display=True):
+        self.display = display
         self.position = Vector(x, y)
         self.neighbors = {UP: None, DOWN: None, LEFT: None, RIGHT: None, PORTAL: None}
         self.access = {
@@ -20,8 +21,9 @@ class Node(object):
             if self.neighbors[n] is not None:
                 line_start = self.position.asTuple()
                 line_end = self.neighbors[n].position.asTuple()  # type: ignore
-                pygame.draw.line(screen, WHITE, line_start, line_end, 4)
-                pygame.draw.circle(screen, RED, self.position.asInt(), 12)
+                if self.display:
+                    pygame.draw.line(screen, WHITE, line_start, line_end, 4)
+                    pygame.draw.circle(screen, RED, self.position.asInt(), 12)
 
     def denyAccess(self, direction, entity):
         if entity.name in self.access[direction]:

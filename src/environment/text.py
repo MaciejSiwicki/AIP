@@ -4,7 +4,10 @@ from constants import *
 
 
 class Text(object):
-    def __init__(self, text, color, x, y, size, time=None, id=None, visible=True):
+    def __init__(
+        self, text, color, x, y, size, time=None, id=None, visible=True, display=True
+    ):
+        self.display = display
         self.id = id
         self.text = text
         self.color = color
@@ -15,7 +18,8 @@ class Text(object):
         self.lifespan = time
         self.label = None
         self.destroy = False
-        self.setupFont("utils/PressStart2P-Regular.ttf")
+        if self.display:
+            self.setupFont("utils/PressStart2P-Regular.ttf")
         self.createLabel()
 
     def setupFont(self, fontpath):

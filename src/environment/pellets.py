@@ -5,7 +5,8 @@ import numpy as np
 
 
 class Pellet(object):
-    def __init__(self, row, column):
+    def __init__(self, row, column, display=True):
+        self.display = display
         self.name = PELLET
         self.position = Vector(column * TILEWIDTH, row * TILEHEIGHT)
         self.color = WHITE
@@ -18,7 +19,8 @@ class Pellet(object):
         if self.visible:
             adjust = Vector(TILEWIDTH, TILEHEIGHT) / 2
             p = self.position + adjust
-            pygame.draw.circle(screen, self.color, p.asInt(), self.radius)
+            if self.display:
+                pygame.draw.circle(screen, self.color, p.asInt(), self.radius)
 
 
 class PowerPellet(Pellet):

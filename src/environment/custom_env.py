@@ -7,14 +7,14 @@ from constants import *
 
 class CustomEnv(gym.Env):
     # metadata = {'render.modes' : ['human']}
-    def __init__(self):
-        gamecontroller = GameController()
+    def __init__(self, display=True):
+        gamecontroller = GameController(display=False)
         max_x = SCREENWIDTH
         max_y = SCREENHEIGHT
         num_ghosts = 4
         eatenPellets = 244
         self.pygame = gamecontroller.startGame()
-        # 4 possible movements - -2 right, 2 left, 1 up, -1 down 0 stop
+        # 5 possible movements - -2 right, 2 left, 1 up, -1 down 0 stop
         self.action_space = spaces.Discrete(5)
 
         flat_dimensions = [SCREENWIDTH, SCREENHEIGHT, 5] * (num_ghosts + 1) + [
@@ -37,8 +37,8 @@ class CustomEnv(gym.Env):
         self.pygame.update("human", action)
         return obs, reward, done, {}
 
-    # def render(self, mode):
-    #     self.pygame.update(mode)
+    def render(self, mode):
+        self.pygame.update(mode)
 
     def close(self):
         pass

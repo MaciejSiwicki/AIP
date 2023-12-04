@@ -6,7 +6,8 @@ from random import randint
 
 
 class Entity(object):
-    def __init__(self, node):
+    def __init__(self, node, display=True):
+        self.display = display
         self.goal = None
         self.name = None
         self.directions = {
@@ -38,6 +39,7 @@ class Entity(object):
 
     def validDirection(self, direction):
         if direction is not STOP:
+            # print(self.node.access[direction])
             if self.name in self.node.access[direction]:
                 if self.node.neighbors[direction] is not None:
                     return True
@@ -80,7 +82,8 @@ class Entity(object):
                 screen.blit(self.image, p.asTuple())
             else:
                 p = self.position.asInt()
-                pygame.draw.circle(screen, self.color, p, self.radius)
+                if self.display:
+                    pygame.draw.circle(screen, self.color, p, self.radius)
 
     def update(self, dt):
         self.position += self.directions[self.direction] * self.speed * dt

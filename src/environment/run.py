@@ -19,6 +19,7 @@ class GameController(object):
         self.lives = 1
         self.score = 0
         self.textgroup = TextGroup()
+        self.reward = 0
 
     def action(self, action):
         if self.pacman.alive:
@@ -34,63 +35,40 @@ class GameController(object):
                 return STOP
 
     def evaluate(self):
-        reward = 0
         if self.lives == 0:
-            reward += -5
-            return reward
-        if self.pacman.alive:
-            reward += self.pellets.numEaten
-        if self.pellets.isEmpty():
-            reward += self.pellets.numEaten
-
+            self.reward += -500
+        if self.pacman.alive and self.pellets.isEmpty():
+            self.reward += self.pellets.numEaten
+        if (
+            self.pacman.alive
+            and self.pellets.numEaten - self.pellets.previousNumEaten == 1
+        ):
+            self.reward += 10
+        if (
+            self.pacman.alive
+            and self.pellets.numEaten - self.pellets.previousNumEaten == 0
+        ):
+            self.reward += -0.1
         # if self.pacman.eatPellets(self.pellets.pelletList).name == POWERPELLET:
         #     reward += 50
-
-        print(reward)
-        return reward
+        # print(self.reward)
+        return self.reward
 
     def is_done(self):
         if self.lives == 0 or (self.pellets.isEmpty() and self.pacman.alive):
+            self.reward = 0
             return True
         else:
             return False
 
     def observe(self):
-        # print(
-        #     [self.pacman.position.x, self.pacman.position.y, self.pacman.direction],
-        #     [
-        #         self.ghosts.blinky.position.x,
-        #         self.ghosts.blinky.position.y,
-        #         self.ghosts.blinky.direction,
-        #     ],
-        #     # self.ghosts.blinky.mode.current,
-        #     [
-        #         self.ghosts.pinky.position.x,
-        #         self.ghosts.pinky.position.y,
-        #         self.ghosts.pinky.direction,
-        #     ],
-        #     # self.ghosts.pinky.mode.current,
-        #     [
-        #         self.ghosts.inky.position.x,
-        #         self.ghosts.inky.position.y,
-        #         self.ghosts.inky.direction,
-        #     ],
-        #     # self.ghosts.inky.mode.current,
-        #     [
-        #         self.ghosts.clyde.position.x,
-        #         self.ghosts.clyde.position.y,
-        #         self.ghosts.clyde.direction,
-        #     ],
-        #     # self.ghosts.clyde.mode.current,
-        #     self.pellets.numEaten,
-        #     # self.pellets.powerpellets
-        # )
+        #     print(self.pacman.node.neighbors)
+
         observation_mapping = {-2: 0, -1: 1, 0: 2, 1: 3, 2: 4}
         return np.array(
             [
                 self.pacman.position.x,
                 self.pacman.position.y,
-                observation_mapping[self.pacman.direction],
                 self.ghosts.blinky.position.x,
                 self.ghosts.blinky.position.y,
                 observation_mapping[self.ghosts.blinky.direction],
@@ -204,9 +182,10 @@ class GameController(object):
 
     def checkPelletEvents(self):
         pellet = self.pacman.eatPellets(self.pellets.pelletList)
+        self.pellets.previousNumEaten = self.pellets.numEaten
         if pellet:
             self.pellets.numEaten += 1
-            # print(self.pellets.numEaten)
+            # print(f"pellets_eatern: {self.pellets.numEaten}")
             self.updateScore(pellet.points)
             if self.pellets.numEaten == 30:
                 self.ghosts.inky.startNode.allowAccess(RIGHT, self.ghosts.inky)

@@ -43,6 +43,7 @@ class PelletGroup(object):
         self.powerpellets = []
         self.createPelletList(pelletfile)
         self.numEaten = 0
+        self.previousNumEaten = 0
 
     def update(self, dt):
         for powerpellet in self.powerpellets:

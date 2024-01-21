@@ -6,7 +6,7 @@ from random import randint
 
 
 class Entity(object):
-    def __init__(self, node):
+    def __init__(self, node, learning=False):
         self.goal = None
         self.name = None
         self.directions = {
@@ -102,10 +102,10 @@ class Entity(object):
 
     def validDirections(self):
         directions = []
-        for key in [UP, DOWN, LEFT, RIGHT]:
-            if self.validDirection(key):
-                if key != self.direction * -1:
-                    directions.append(key)
+        for moves in [UP, DOWN, LEFT, RIGHT]:
+            if self.validDirection(moves):
+                if moves != self.direction * -1:
+                    directions.append(moves)
         if len(directions) == 0:
             directions.append(self.direction * -1)
         return directions
@@ -122,11 +122,6 @@ class Entity(object):
             distances.append(vec.magnitudeSquared())
         index = distances.index(min(distances))
         return directions[index]
-
-    def reset(self):
-        self.setStartNode(self.startNode)
-        self.direction = STOP
-        self.speed = 100
 
     def setBetweenNodes(self, direction):
         if self.node.neighbors[direction] is not None:

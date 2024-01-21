@@ -13,6 +13,7 @@ class Pacman(Entity):
         self.name = PACMAN
         self.color = YELLOW
         self.direction = LEFT
+        self.last_direction = LEFT
         self.setBetweenNodes(LEFT)
         self.alive = True
         self.sprites = PacmanSprites(self)
@@ -31,6 +32,7 @@ class Pacman(Entity):
         self.sprites.update(dt)
         self.position += self.directions[self.direction] * self.speed * dt
         direction = self.getValidKey(mode, action)
+        self.last_direction = self.direction
         if self.overshotTarget():
             self.node = self.target
             if self.node.neighbors[PORTAL] is not None:
@@ -57,17 +59,9 @@ class Pacman(Entity):
             else:
                 return self.direction
         if action is not None:
+            # observation_mapping = {0: RIGHT, 1: LEFT, 2: UP, 3: DOWN}
             observation_mapping = {0: -2, 1: -1, 2: 0, 3: 1, 4: 2}
             return observation_mapping[action]
-        key_pressed = pygame.key.get_pressed()
-        if key_pressed[K_UP]:
-            return UP
-        if key_pressed[K_DOWN]:
-            return DOWN
-        if key_pressed[K_LEFT]:
-            return LEFT
-        if key_pressed[K_RIGHT]:
-            return RIGHT
         return STOP
 
     def eatPellets(self, pelletList):

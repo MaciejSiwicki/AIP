@@ -14,10 +14,10 @@ class CustomEnv(gym.Env):
         num_ghosts = 4
         eatenPellets = 244
         self.pygame = gamecontroller.startGame()
-        self.action_space = spaces.Discrete(5)
+        self.action_space = spaces.Discrete(3)
         flat_dimensions = (
             [SCREENWIDTH, SCREENHEIGHT]
-            + [SCREENWIDTH, SCREENHEIGHT, 5] * (num_ghosts)
+            + [SCREENWIDTH, SCREENHEIGHT, 4] * (num_ghosts)
             + [max(eatenPellets, 1)]
         )
         multi_discrete_space = spaces.MultiDiscrete(flat_dimensions)

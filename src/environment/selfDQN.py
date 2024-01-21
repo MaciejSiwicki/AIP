@@ -1,55 +1,54 @@
+import tensorflow as tf
 import numpy as np
-import random
-from collections import deque
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
-from tensorflow.keras.optimizers import Adam
 
 
 class DQN:
     def __init__(self, state_size, action_size):
         self.state_size = state_size
         self.action_size = action_size
-        self.replay_buffer = deque(maxlen=5000)
         self.gamma = 0.9
-        self.epsilon = 0.8
-        self.update_rate = 1000
-        self.main_network = self.build_model()
-        self.target_network = self.build_model()
-        self.target_network.set_weights(self.main_network.get_weights())
+        self.epsilon = 0.9
+        self.epsilon_decay = 0.999
+        self.epsilon_min = 0.01
+        self.learning_rate = 0.01
+        self.model = self.build_model()
 
     def build_model(self):
-        model = Sequential()
-        model.add(Dense(64, input_dim=np.prod(self.state_size), activation="relu"))
-        model.add(Dense(64, activation="relu"))
-        model.add(Dense(self.action_size, activation="linear"))
-        model.compile(loss="mse", optimizer=Adam())
+        model = tf.keras.Sequential()
+        model.add(
+            tf.keras.layers.Dense(32, input_dim=self.state_size, activation="relu")
+        )
+        model.add(tf.keras.layers.Dense(32, activation="relu"))
+        model.add(tf.keras.layers.Dense(self.action_size, activation="linear"))
+        model.compile(
+            loss="mse",
+            optimizer=tf.keras.optimizers.Adam(learning_rate=self.learning_rate),
+        )
         return model
 
-    def store_transition(self, state, action, reward, next_state, done):
-        # print(state, action, reward, next_state, done)
-        self.replay_buffer.append((state, action, reward, next_state, done))
-
-    def epsilon_greedy(self, state):
+    def act(self, state):
         if np.random.rand() <= self.epsilon:
-            return np.random.randint(self.action_size)
-        Q_values = self.main_network.predict(np.array([state]), verbose=0)
-        return np.argmax(Q_values[0])
+            return np.random.choice(self.action_size)
+        q_values = self.model.predict(state, verbose=0)
+        return np.argmax(q_values[0])
 
-    def train(self, batch_size):
-        minibatch = np.array(random.sample(self.replay_buffer, batch_size))
-        states = np.vstack(minibatch[:, 0])
-        actions = minibatch[:, 1]
-        rewards = minibatch[:, 2]
-        next_states = np.vstack(minibatch[:, 3])
-        dones = minibatch[:, 4]
+    def train(self, state, action, reward, next_state, done):
+        target = reward
+        if not done:
+            target = reward + self.gamma * np.amax(
+                self.model.predict(next_state, verbose=0)[0]
+            )
 
-        targets = self.main_network.predict(states)
-        targets[range(batch_size), actions] = rewards + (
-            1 - dones
-        ) * self.gamma * np.amax(self.target_network.predict(next_states), axis=1)
+        target_f = self.model.predict(state, verbose=0)
+        target_f[0][action] = target
 
-        self.main_network.fit(states, targets, epochs=1)
+        self.model.fit(state, target_f, epochs=1, verbose=0)
 
-    def update_target_network(self):
-        self.target_network.set_weights(self.main_network.get_weights())
+        if self.epsilon > self.epsilon_min:
+            self.epsilon *= self.epsilon_decay
+
+    def save_model(self, filepath):
+        self.model.save(filepath)
+
+    def load_model(self, filepath):
+        self.model = tf.keras.models.load_model(filepath)

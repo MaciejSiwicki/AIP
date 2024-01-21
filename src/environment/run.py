@@ -7,6 +7,7 @@ from pellets import PelletGroup
 from ghosts import GhostGroup
 from text import TextGroup
 from sprites import MazeSprites
+from vector import Vector
 import numpy as np
 
 
@@ -31,27 +32,29 @@ class GameController(object):
                 return UP
             elif action == DOWN:  # Assuming -1 means move down
                 return DOWN
-            elif action == STOP:  # Assuming 0 means stop
-                return STOP
 
     def evaluate(self):
         if self.lives == 0:
-            self.reward += -500
+            self.reward += -20
+
         if self.pacman.alive and self.pellets.isEmpty():
             self.reward += self.pellets.numEaten
+
         if (
             self.pacman.alive
             and self.pellets.numEaten - self.pellets.previousNumEaten == 1
         ):
-            self.reward += 10
-        if (
-            self.pacman.alive
-            and self.pellets.numEaten - self.pellets.previousNumEaten == 0
+            self.reward += 1.2
+
+        if self.pacman.alive and not (
+            self.pacman.direction in self.pacman.validDirections()
         ):
-            self.reward += -0.1
-        # if self.pacman.eatPellets(self.pellets.pelletList).name == POWERPELLET:
-        #     reward += 50
-        # print(self.reward)
+            self.reward += -10
+
+        for ghost in self.ghosts:
+            if 32 < Vector.magnitude(self.pacman.position - ghost.position) < 0:
+                self.reward += -10
+
         return self.reward
 
     def is_done(self):
@@ -63,7 +66,6 @@ class GameController(object):
 
     def observe(self):
         #     print(self.pacman.node.neighbors)
-
         observation_mapping = {-2: 0, -1: 1, 0: 2, 1: 3, 2: 4}
         return np.array(
             [
@@ -130,7 +132,7 @@ class GameController(object):
         return self
 
     def update(self, mode="human", action=None):
-        dt = self.clock.tick(30) / 1000.0
+        dt = self.clock.tick(30) / 1400
         self.textgroup.update(dt)
         self.pacman.update(dt, mode, action)
         self.ghosts.update(dt)
@@ -164,8 +166,6 @@ class GameController(object):
                     if self.pacman.alive:
                         self.lives -= 1
                         self.pacman.die()
-                        # if self.lives <= 0:
-                        #     self.restartGame()
 
     def checkEvents(self):
         for event in pygame.event.get():
@@ -185,7 +185,6 @@ class GameController(object):
         self.pellets.previousNumEaten = self.pellets.numEaten
         if pellet:
             self.pellets.numEaten += 1
-            # print(f"pellets_eatern: {self.pellets.numEaten}")
             self.updateScore(pellet.points)
             if self.pellets.numEaten == 30:
                 self.ghosts.inky.startNode.allowAccess(RIGHT, self.ghosts.inky)
@@ -196,10 +195,3 @@ class GameController(object):
                 self.ghosts.startFreight()
             if self.pellets.isEmpty():
                 self.restartGame()
-
-
-if __name__ == "__main__":
-    game = GameController()
-    game.startGame()
-    while True:
-        game.update()

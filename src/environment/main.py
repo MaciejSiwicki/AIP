@@ -1,62 +1,76 @@
 from custom_env import CustomEnv
+from run import GameController
 from constants import *
 import gym
 import numpy as np
 from stable_baselines3 import A2C
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import SubprocVecEnv
+from tensorflow.keras.models import load_model
 from selfDQN import DQN
+import random
+import os
 
 if __name__ == "__main__":
     env = CustomEnv()
     observation = env.reset()
+    state_size = len(env.observation_space)
+    action_size = env.action_space.n
+    dqn_agent = DQN(state_size, action_size)
 
-    ################### DQN ###################
-    # num_episodes = 30
-    # num_timesteps = 40
-    # num_ghosts = 4
-    # state_size = 15  # Długość wektora obserwacji
-    # action_size = 5
-    # batch_size = 32
-    # dqn = DQN(state_size, action_size)
-    # time_step = 0
+    method = A2C  # MODIFY THIS TO CHANGE THE METHOD
+    testing = True  # MODIFY THIS TO TRUE TO TEST
 
-    # for episode in range(num_episodes):
-    #     state = env.reset()  # Resetujemy stan środowiska na początku każdego epizodu
-    #     for t in range(num_timesteps):
-    #         env.render()
-    #         time_step += 1
-    #         if time_step % dqn.update_rate == 0:
-    #             dqn.update_target_network()
-    #         action = dqn.epsilon_greedy(state)
-    #         next_state, reward, done, _ = env.step(action)
-    #         next_state = np.array(next_state).flatten()  # Spłaszczamy wektor stanu
-    #         dqn.store_transition(state, action, reward, next_state, done)
-    #         state = next_state
-    #         if time_step % dqn.update_rate == 0:
-    #             dqn.update_target_network()
-    #         if done:
-    #             break
-    # learned_policy = dqn.main_network
-    # learned_policy.save("pacman-dqn")
-    # print("-----")
-    # state = env.reset()
-    # while True:
-    #     env.render()
-    #     action = np.argmax(learned_policy.predict(np.array([state]), verbose=0)[0])
-    #     next_state, reward, done, _ = env.step(action)
-    #     state = next_state
-    #     if done:
-    #         break
-    ################### A2C ###################
+    learning = not testing
+    if testing:
+        if method == A2C:
+            model = A2C.load("pacman-a2c-2mln")
+            done = False
+            while not done:
+                action, _states = model.predict(observation)
+                observation, reward, done, info = env.step(int(action))
+        elif method == DQN:
+            dqn_agent.load_model("DQN-8900.h5")
+            state = env.reset()
+            done = False
+            while not done:
+                state = np.reshape(observation, [1, state_size])
+                action = dqn_agent.act(state)
+                observation, reward, done, info = env.step(int(action))
 
-    model = A2C("MlpPolicy", env, device="cpu")
-    model.learn(total_timesteps=10000)
-    model.save("pacman-a2c")
-    del model
-    model = A2C.load("pacman-a2c")
-    done = False
-    while not done:
-        action, _states = model.predict(observation)
-        observation, reward, done, info = env.step(int(action))
-        print(observation, reward, done, info)
+    if learning == True:
+        if method == DQN:
+            num_episodes = 2000
+            num_timesteps = 10000
+            total_timesteps = 0  # do not change
+            if dqn_agent.epsilon > dqn_agent.epsilon_min:
+                for episode in range(num_episodes):
+                    observation = env.reset()
+                    for t in range(num_timesteps):
+                        env.render()
+                        t += 1
+                        total_timesteps += 1
+                        state = np.reshape(observation, [1, state_size])
+                        action = dqn_agent.act(state)
+                        next_observation, reward, done, info = env.step(action)
+                        dqn_agent.train(
+                            np.reshape(observation, [1, state_size]),
+                            action,
+                            reward,
+                            np.reshape(next_observation, [1, state_size]),
+                            done,
+                        )
+                        observation = next_observation
+                        if done:
+                            print(
+                                f"Episode {episode} total_timestep {total_timesteps}, Epsilon {dqn_agent.epsilon}"
+                            )
+                            break
+            filename = f"{method.__name__}-{total_timesteps}.h5"
+            dqn_agent.save_model(filename)
+
+        elif method == A2C:
+            model = A2C("MlpPolicy", env, device="cpu")
+            model.learn(total_timesteps=1000000)
+            model.save("pacman-a2c-1mln")
+            del model

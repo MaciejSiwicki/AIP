@@ -8,7 +8,7 @@ class DQN:
         self.action_size = action_size
         self.gamma = 0.9
         self.epsilon = 0.9
-        self.epsilon_decay = 0.999
+        self.epsilon_decay = 0.996
         self.epsilon_min = 0.01
         self.learning_rate = 0.01
         self.model = self.build_model()

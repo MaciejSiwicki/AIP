@@ -19,7 +19,7 @@ class Entity(object):
         self.direction = STOP
         self.setSpeed(100)
         self.radius = 10
-        self.collideRadius = 5
+        self.collideRadius = 10
         self.color = WHITE
         self.visible = True
         self.disablePortal = False
@@ -122,6 +122,11 @@ class Entity(object):
             distances.append(vec.magnitudeSquared())
         index = distances.index(min(distances))
         return directions[index]
+
+    def reset(self):
+        self.setStartNode(self.startNode)
+        self.direction = STOP
+        self.speed = 100
 
     def setBetweenNodes(self, direction):
         if self.node.neighbors[direction] is not None:

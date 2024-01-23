@@ -59,8 +59,7 @@ class Pacman(Entity):
             else:
                 return self.direction
         if action is not None:
-            # observation_mapping = {0: RIGHT, 1: LEFT, 2: UP, 3: DOWN}
-            observation_mapping = {0: -2, 1: -1, 2: 0, 3: 1, 4: 2}
+            observation_mapping = {0: RIGHT, 1: LEFT, 2: UP, 3: DOWN}
             return observation_mapping[action]
         return STOP
 

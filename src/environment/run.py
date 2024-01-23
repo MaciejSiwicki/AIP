@@ -71,6 +71,7 @@ class GameController(object):
             [
                 self.pacman.position.x,
                 self.pacman.position.y,
+                observation_mapping[self.pacman.direction],
                 self.ghosts.blinky.position.x,
                 self.ghosts.blinky.position.y,
                 observation_mapping[self.ghosts.blinky.direction],
@@ -132,7 +133,7 @@ class GameController(object):
         return self
 
     def update(self, mode="human", action=None):
-        dt = self.clock.tick(30) / 1400
+        dt = self.clock.tick(30) / 1000
         self.textgroup.update(dt)
         self.pacman.update(dt, mode, action)
         self.ghosts.update(dt)

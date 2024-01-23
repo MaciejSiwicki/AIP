@@ -24,13 +24,13 @@ if __name__ == "__main__":
     learning = not testing
     if testing:
         if method == A2C:
-            model = A2C.load("pacman-a2c-2mln")
+            model = A2C.load("A2C/pacman-a2c-2mln")
             done = False
             while not done:
                 action, _states = model.predict(observation)
                 observation, reward, done, info = env.step(int(action))
         elif method == DQN:
-            dqn_agent.load_model("DQN-8900.h5")
+            dqn_agent.load_model("DQN/DQN-36960.h5")
             state = env.reset()
             done = False
             while not done:
@@ -40,9 +40,9 @@ if __name__ == "__main__":
 
     if learning == True:
         if method == DQN:
-            num_episodes = 2000
+            num_episodes = 1000
             num_timesteps = 10000
-            total_timesteps = 0  # do not change
+            total_timesteps = 0
             if dqn_agent.epsilon > dqn_agent.epsilon_min:
                 for episode in range(num_episodes):
                     observation = env.reset()
@@ -62,15 +62,16 @@ if __name__ == "__main__":
                         )
                         observation = next_observation
                         if done:
-                            print(
-                                f"Episode {episode} total_timestep {total_timesteps}, Epsilon {dqn_agent.epsilon}"
-                            )
+                            env.reset()
+                            print(episode)
                             break
             filename = f"{method.__name__}-{total_timesteps}.h5"
+            env.save_reward(filename="rewards_DQN2.txt")
             dqn_agent.save_model(filename)
 
         elif method == A2C:
             model = A2C("MlpPolicy", env, device="cpu")
-            model.learn(total_timesteps=1000000)
-            model.save("pacman-a2c-1mln")
+            model.learn(total_timesteps=200000)
+            env.save_reward()
+            model.save(f"pacman-a2c-zzz")
             del model
